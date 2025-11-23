@@ -31,7 +31,7 @@ public class AuthService(AppDbContext  context, IConfiguration configuration) : 
             Email = userDetails.Email
         };
 
-        var hashedPassword = new PasswordHasher<User>()
+        user.PasswordHash = new PasswordHasher<User>()
                 .HashPassword(user, userDetails.Password);
 
         context.Users.Add(user);
