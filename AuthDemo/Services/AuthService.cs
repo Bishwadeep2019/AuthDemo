@@ -2,6 +2,7 @@
 using AuthDemo.Models;
 using AuthDemo.Services.Entities;
 using AuthDemo.Services.Interface;
+using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,27 +13,22 @@ using System.Text;
 
 public class AuthService(AppDbContext  context, IConfiguration configuration) : IAuthService
 {
-    public Task<TokenResponseDto> LoginUser(UserDto userDetails)
+    public async Task<UserRegisterDto> RegisterUser(UserDto userDetails)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task<UserRegisterDto> RegisterUser(UserDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Password))
+        if (string.IsNullOrWhiteSpace(userDetails.Password))
             throw new ArgumentException("Password cannot be empty");
 
-        if (await context.Users.AnyAsync(u => u.Username == dto.Username))
+        if (await context.Users.AnyAsync(u => u.Email == userDetails.Email))
             throw new InvalidOperationException("User already exists");
 
         var user = new User
         {
-            Username = dto.Username,
-            Email = dto.Email
+            Username = userDetails.Username,
+            Email = userDetails.Email
         };
 
         var hashedPassword = new PasswordHasher<User>()
-                .HashPassword(user, dto.Password);
+                .HashPassword(user, userDetails.Password);
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
@@ -49,6 +45,23 @@ public class AuthService(AppDbContext  context, IConfiguration configuration) : 
                 AccessToken = CreateAccessToken(user),
                 RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
             }
+        };
+    }
+
+    public async Task<TokenResponseDto> LoginUser(UserDto userDetails)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == userDetails.Email);
+        if (user is null)
+            throw new InvalidOperationException("User doesnot exists");
+
+        if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, userDetails.Password)
+                == PasswordVerificationResult.Failed)
+            throw new InvalidOperationException("Password is wrong");
+
+        return new TokenResponseDto
+        {
+            AccessToken = CreateAccessToken(user),
+            RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
         };
     }
 

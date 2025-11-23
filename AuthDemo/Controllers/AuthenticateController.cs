@@ -18,6 +18,7 @@ namespace AuthDemo.Controllers
                 return BadRequest("User already exists");
 
             SetAccessTokenCookie(result.Tokens.AccessToken);
+            SetRefreshTokenCookie(result.Tokens.RefreshToken);
 
             return Ok(new { message = "User Registered Successfully"});
         }
@@ -25,8 +26,13 @@ namespace AuthDemo.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponseDto>> Login(UserDto userDetails)
         {
-            // Login logic here
-            return Ok("User registered successfully.");
+
+            var tokens = await authService.LoginUser(userDetails);
+
+            SetAccessTokenCookie(tokens.AccessToken);
+            SetRefreshTokenCookie(tokens.RefreshToken);
+
+            return Ok("User logged in successfully.");
         }
 
         [HttpGet("protected")]
@@ -49,6 +55,17 @@ namespace AuthDemo.Controllers
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddHours(1)
+            });
+        }
+
+        private void SetRefreshTokenCookie(string token)
+        {
+            Response.Cookies.Append("refreshToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
             });
         }
     }
