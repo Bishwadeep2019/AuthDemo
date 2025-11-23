@@ -2,7 +2,6 @@
 using AuthDemo.Models;
 using AuthDemo.Services.Entities;
 using AuthDemo.Services.Interface;
-using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +12,11 @@ using System.Text;
 
 public class AuthService(AppDbContext  context, IConfiguration configuration) : IAuthService
 {
+    /// <summary>
+    /// Registers a new user with the specified details and returns registration information, including authentication
+    /// tokens.
+    /// </summary>
+    /// <returns>A UserRegisterDto containing the registered user's information and authentication tokens.</returns>
     public async Task<UserRegisterDto> RegisterUser(UserDto userDetails)
     {
         if (string.IsNullOrWhiteSpace(userDetails.Password))
@@ -48,6 +52,11 @@ public class AuthService(AppDbContext  context, IConfiguration configuration) : 
         };
     }
 
+    /// <summary>
+    /// Authenticates a user with the provided credentials and returns a token response containing access and refresh
+    /// tokens.
+    /// </summary>
+    /// <returns>A <see cref="TokenResponseDto"/> containing the access token and refresh token for the authenticated user.</returns>
     public async Task<TokenResponseDto> LoginUser(UserDto userDetails)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Email == userDetails.Email);

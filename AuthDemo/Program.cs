@@ -1,9 +1,7 @@
 using AuthDemo.Data;
-using AuthDemo.Services;
 using AuthDemo.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 

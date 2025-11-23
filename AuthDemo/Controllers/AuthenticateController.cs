@@ -32,7 +32,7 @@ namespace AuthDemo.Controllers
             SetAccessTokenCookie(tokens.AccessToken);
             SetRefreshTokenCookie(tokens.RefreshToken);
 
-            return Ok("User logged in successfully.");
+            return Ok(new { message = "User logged in successfully." });
         }
 
         [HttpGet("protected")]
